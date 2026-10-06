@@ -44,15 +44,6 @@ class ModelRoute:
     min_input_tokens: int | None = None
     """Match only when estimated input tokens are >= this."""
 
-    max_output_tokens: int | None = None
-    """Match only when the request's own ``max_tokens`` is <= this.
-
-    The caller's declared output budget is the best "this turn is trivial"
-    signal at routing time: a tiny prompt asking for 4000 output tokens may
-    want a long answer from the strong model. A request that declares no
-    ``max_tokens`` does NOT match (an unbounded response is not a trivial
-    turn), so the rule can never widen to unbounded requests."""
-
     require_no_tools: bool = False
     """Match only when the request declares no tools (a proxy for low-risk work)."""
 
@@ -69,6 +60,17 @@ class ModelRoute:
 
     name: str = ""
     """Human-readable label surfaced in decision logs."""
+
+    # Appended after the original fields so existing positional
+    # ``ModelRoute(...)`` calls keep their meaning.
+    max_output_tokens: int | None = None
+    """Match only when the request's own ``max_tokens`` is <= this.
+
+    The caller's declared output budget is the best "this turn is trivial"
+    signal at routing time: a tiny prompt asking for 4000 output tokens may
+    want a long answer from the strong model. A request that declares no
+    ``max_tokens`` does NOT match (an unbounded response is not a trivial
+    turn), so the rule can never widen to unbounded requests."""
 
     def matches(
         self,

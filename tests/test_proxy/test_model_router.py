@@ -75,6 +75,23 @@ def test_route_without_max_output_tokens_ignores_budget() -> None:
     assert route.matches(model="strong", input_tokens=10, has_tools=False)
 
 
+def test_route_positional_constructor_keeps_original_field_order() -> None:
+    # max_output_tokens is appended last, so positional ModelRoute(...) calls
+    # written before #2765 keep their meaning: here the 4th positional arg is
+    # still require_no_tools, not the new output bound.
+    route = ModelRoute("cheap", 4000, None, True)
+    assert route.require_no_tools is True
+    assert route.max_output_tokens is None
+    assert not route.matches(model="strong", input_tokens=10, has_tools=True, max_tokens=1)
+    assert route.matches(model="strong", input_tokens=10, has_tools=False, max_tokens=1)
+
+    route = ModelRoute("cheap", None, None, False, True, ("strong",), "agentic")
+    assert route.require_tools is True
+    assert route.from_models == ("strong",)
+    assert route.name == "agentic"
+    assert route.max_output_tokens is None
+
+
 def test_route_matches_even_for_same_model() -> None:
     # A same-model rule still MATCHES (strict first-match-wins); it is a no-op
     # that short-circuits later rules, enabling explicit exemption rules.
