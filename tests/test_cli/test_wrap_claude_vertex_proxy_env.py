@@ -322,6 +322,24 @@ def test_wrap_claude_compact_tool_search_off_line(
     assert "kept on" not in output
 
 
+def test_proxy_status_line_keeps_own_signature_and_names_port_once() -> None:
+    # The status helper must not inherit _ensure_proxy_unlocked's metadata via
+    # a stray @wraps; _ensure_proxy is the function that should carry it.
+    import inspect
+
+    assert wrap_mod._proxy_status_line.__name__ == "_proxy_status_line"
+    assert list(inspect.signature(wrap_mod._proxy_status_line).parameters) == [
+        "status",
+        "port",
+    ]
+    assert wrap_mod._ensure_proxy.__wrapped__ is wrap_mod._ensure_proxy_unlocked
+    assert "learn" in inspect.signature(wrap_mod._ensure_proxy).parameters
+
+    line = wrap_mod._proxy_status_line("Proxy ready", 8787)
+    assert line == "  Proxy ready — dashboard: http://127.0.0.1:8787/dashboard"
+    assert line.count("127.0.0.1:8787") == 1
+
+
 def test_wrap_claude_vertex_passes_custom_base_url_to_proxy_before_child_redirect(
     runner: CliRunner, monkeypatch: pytest.MonkeyPatch
 ) -> None:

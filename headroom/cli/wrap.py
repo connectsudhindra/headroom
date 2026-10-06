@@ -5114,12 +5114,12 @@ def _proxy_start_lock(port: int) -> Any:
         yield
 
 
-@wraps(_ensure_proxy_unlocked)
 def _proxy_status_line(status: str, port: int) -> str:
     """One banner line for the proxy, naming its host:port once (#3426)."""
     return f"  {status} — dashboard: http://127.0.0.1:{port}/dashboard"
 
 
+@wraps(_ensure_proxy_unlocked)
 def _ensure_proxy(
     port: int,
     no_proxy: bool,
